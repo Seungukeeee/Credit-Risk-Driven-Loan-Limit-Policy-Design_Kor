@@ -1,0 +1,43 @@
+# ── 데이터 ────────────────────────────────
+data/raw/
+data/*.csv
+data/*.parquet
+*.csv
+*.parquet
+
+# 단, 프로젝트 설명용 소형 샘플/스키마 파일은 예외로 허용하고 싶으면 아래처럼 개별 추가
+# !data/sample_schema.csv
+
+# ── 모델/실험 산출물 ─────────────────────
+models/
+*.pkl
+*.joblib
+*.cbm
+mlruns/
+optuna_study.db
+
+# ── Jupyter ───────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ── Python ────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+.python-version
+
+# ── 환경 변수 / 시크릿 ────────────────────
+.env
+*.env
+
+# ── OS / 에디터 ───────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# ── 로그 ──────────────────────────────────
+*.log
