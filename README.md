@@ -53,7 +53,7 @@ EL(기대손실) = PD × LGD × EAD 계산에 PD가 직접 입력되기 때문�
 | 부실률 | 8.07% | 6.58% | -1.49%p |
 | 기대손실(EL, Base 시나리오) | 기준 | 감소 | EL 감소 + 저위험군 한도 확대로 인한 수익 증가 합산 순효과 플러스 |
 
-**모델 성능(참고 지표)**: XGBoost(NaN 유지, 튜닝 후) AUC 0.7748 / KS 0.4123, Logistic Regression 베이스라인 대비 AUC +0.036.
+**모델 성능(참고 지표)**: XGBoost(NaN 유지, 튜닝 후) AUC 0.7689 / KS 0.3969, Logistic Regression 베이스라인 대비 AUC +0.033, PR-AUC +0.047.
 
 **Calibration 검증**: Platt Scaling 적용 후 PD 구간별 예측-실제 부도율 gap 대부분 0.02 이내.
 
