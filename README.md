@@ -7,6 +7,21 @@ Credit Risk-Driven Loan Limit Policy Design
 
 대출 심사 실무에서는 고객별 한도를 정해야 하지만, PD 예측만으로는 실제 한도 결정을 내리기 어렵습니다. 기존의 단일 임계값 승인·거절 방식은 한도 차등화가 없어 기회손실과 과다 익스포저를 동시에 초래할 수 있습니다. 그렇기에 예측값을 실제 의사결정으로 연결하는 정책 규칙과 손익 검증 체계가 필요합니다. PD 구간별 차등 한도 정책을 설계하고, **전수 승인(무심사 승인) 가정 대비 정책 적용 후**의 승인율, 부실률, 기대손실 변화로 효과를 검증했습니다.
 
+## 핵심 결과
+
+정책 설계이므로 단일 지표(AUC)보다 정책 판단에 쓰이는 트레이드오프 지표를 중심으로 평가했습니다.
+
+| 지표 | 적용 전(전수 승인 가정) | 적용 후 | 변화 |
+|---|---|---|---|
+| 승인율 | 100% | 70.89% | -29.11%p |
+| 부실률 | 8.07% | 4.61% | -3.46%p |
+| 기대손실(EL, Base 시나리오) | 15.1억 | 5.4억 | **-64.15%** |
+| 총 승인 한도 | 367.5억 | 209.3억 | -43.0% |
+
+손실 감소폭(-64%)이 한도 축소폭(-43%)보다 커서, 한도 축소가 무작위가 아니라 실제 고위험 고객군에 집중적으로 작동했음을 시사합니다. 이 효과는 LGD 시나리오와 무관하게 유지됩니다(Optimistic·Base·Conservative 모두 64.1%대로 사실상 동일 — `EL` 계산에서 LGD가 정책 적용 전후 양쪽에 동일하게 곱해지는 상수이기 때문). 다만 한도 축소가 회사 수익(특히 이자 수익)에 미치는 영향은 이번 시뮬레이션에서 다루지 않았으므로, 이 트레이드오프의 최종 타당성은 수익성 지표까지 포함해 별도로 판단해야 합니다.
+
+*(위 숫자가 어떻게 산출되었는지는 아래 데이터 → 정책 설계 접근법 → 평가(상세) 순서로 설명합니다.)*
+
 ## 데이터 & 타깃 정의
 
 **데이터**: Home Credit Default Risk(Kaggle) 4개 테이블 — application_train(신청 정보, 307,511건), bureau(외부 신용기관 대출 이력), installments_payments(과거 납부 이력), previous_application(Home Credit 내 이전 대출 이력).
@@ -43,18 +58,9 @@ EL(기대손실) = PD × LGD × EAD 계산에 PD가 직접 입력되기 때문�
 
 보정된 PD를 절대 확률이 아니라 **포트폴리오 평균 부실률 대비 배수**(0.5배/2배/4배 경계)로 4개 tier(저위험/중위험/고위험/거절)로 나눴고, decile 단위로 확인한 실제 부도율이 단조 증가하는 것을 확인해 PD를 tier 설계의 기준 축으로 쓸 수 있음을 검증했습니다. 여기에 LTV(1.2 초과 시 독립적 하향)·CIR(7.5배 초과 시 한도초과 하향, 12배 초과 시 tier 무관 절대 거절)·DTI(중·고위험에 한해 40% 초과 시 보조적 하향)를 각자의 역할에 맞게 결합해 최종 tier를 확정했습니다. 승인 tier의 한도 배수는 LGD 3개 시나리오를 모두 통과해야 하는 보수적 게이트로 결정했으며, 그 결과 저위험은 소득의 3.0배, 중위험은 5.0배까지 승인하고 고위험은 거절로 확정했습니다.
 
-## 평가
+## 평가 (상세)
 
-정책 설계이므로 단일 지표(AUC)보다 정책 판단에 쓰이는 트레이드오프 지표를 중심으로 평가했습니다.
-
-| 지표 | 적용 전(전수 승인 가정) | 적용 후 | 변화 |
-|---|---|---|---|
-| 승인율 | 100% | 70.89% | -29.11%p |
-| 부실률 | 8.07% | 4.61% | -3.46%p |
-| 기대손실(EL, Base 시나리오) | 15.1억 | 5.4억 | **-64.15%** |
-| 총 승인 한도 | 367.5억 | 209.3억 | -43.0% |
-
-손실 감소폭(-64%)이 한도 축소폭(-43%)보다 커서, 한도 축소가 무작위가 아니라 실제 고위험 고객군에 집중적으로 작동했음을 시사합니다. 이 효과는 LGD 시나리오와 무관하게 유지됩니다(Optimistic·Base·Conservative 모두 64.1%대로 사실상 동일 — `EL` 계산에서 LGD가 정책 적용 전후 양쪽에 동일하게 곱해지는 상수이기 때문). 다만 한도 축소가 회사 수익(특히 이자 수익)에 미치는 영향은 이번 시뮬레이션에서 다루지 않았으므로, 이 트레이드오프의 최종 타당성은 수익성 지표까지 포함해 별도로 판단해야 합니다.
+핵심 트레이드오프 지표(승인율/부실률/EL/총 승인 한도)는 위 [핵심 결과](#핵심-결과)를 참고하세요. 아래는 이를 뒷받침하는 모델·보정·운영 관점의 상세 지표입니다.
 
 **모델 성능(참고 지표)**: XGBoost(NaN 유지, 튜닝 후) AUC 0.7689 / KS 0.3969, Logistic Regression 베이스라인 대비 AUC +0.033, PR-AUC +0.047.
 
@@ -79,19 +85,19 @@ EL(기대손실) = PD × LGD × EAD 계산에 PD가 직접 입력되기 때문�
 ## 재현 방법
 ```
 notebooks/
-├── 00_lgd_estimation.ipynb # LGD 탐색 및 시나리오 설정
-├── 01_data_mart.ipynb # SQL 기반 마스터 테이블 구성
-├── 02_eda_policy_design.ipynb # 정책 변수 검증 및 기준치 설정
-├── 03_modeling.ipynb # PD 모델링 (베이스라인 → 앙상블 → 튜닝)
-├── 04_calibration.ipynb # Calibration 검증 및 보정
-├── 05_policy_simulation.ipynb # 정책 규칙 설계 + EL 시뮬레이션
-└── 06_monitoring.ipynb # 3층 운영 모니터링 체계
+├── 00_lgd_estimation.ipynb        # LGD 탐색 및 시나리오 설정
+├── 01_data_mart.ipynb             # SQL 기반 마스터 테이블 구성
+├── 02_eda_policy_design.ipynb     # 정책 변수 검증 및 기준치 설정
+├── 03_modeling.ipynb              # PD 모델링 (베이스라인 → 앙상블 → 튜닝)
+├── 04_calibration.ipynb           # Calibration 검증 및 보정
+├── 05_policy_simulation.ipynb     # 정책 규칙 설계 + EL 시뮬레이션
+└── 06_monitoring.ipynb            # 3층 운영 모니터링 체계
 src/
-├── metrics.py # compute_ece, compute_psi
-└── policy.py # pd_base_tier, assign_risk_tier, compute_el
-reports/figures/ # 노트북에서 저장하는 배치별 추세·분포 시각화
+├── metrics.py                     # compute_ece, compute_psi
+└── policy.py                      # pd_base_tier, assign_risk_tier, compute_el
+reports/figures/                   # 노트북에서 저장하는 배치별 추세·분포 시각화
 ```
 
-노트북은 위 순서대로 실행합니다. 각 노트북의 출력은 다음 노트북의 입력으로 이어집니다. 원본 데이터는 Kaggle Home Credit Default Risk에서 받아 `data/`에 배치합니다. `04`·`05`·`06` 노트북은 `src/metrics.py`, `src/policy.py`의 함수를 불러와 사용합니다.
+노트북은 위 순서대로 실행합니다. 각 노트북의 출력은 다음 노트북의 입력으로 이어집니다. 원본 데이터는 [Kaggle Home Credit Default Risk](https://www.kaggle.com/c/home-credit-default-risk)에서 받아 `data/`에 배치합니다. `04`·`05`·`06` 노트북은 `src/metrics.py`, `src/policy.py`의 함수를 불러와 사용합니다.
 
 **기술 스택**: Python, DuckDB(SQL), LightGBM, XGBoost, CatBoost, Optuna, scikit-learn
